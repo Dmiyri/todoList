@@ -5,11 +5,10 @@ import TodoListTasks from "./TodoListTasks";
 import TodoListFooter from "./TodoListFooter ";
 
 class App extends React.Component {
-/*
 	constructor(props){
 		super(props);
 
-	}*/
+	}
 
 state= {
 	tasks:[
@@ -33,7 +32,7 @@ state= {
 
 	changeStatus=(task, isDone)=>{
 		let newTasks = this.state.tasks.map(t=>{
-			if (task === t){
+			if (t !== task){
 				return t;}
 				else return {...t, isDone:isDone}
 		})
