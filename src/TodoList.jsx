@@ -4,6 +4,8 @@ import TodoListTitle from "./TodoListTitle";
 import TodoListTasks from "./TodoListTasks";
 import TodoListFooter from "./TodoListFooter ";
 import AddNewItemForm from "./AddNewItemForm";
+import {connect} from "react-redux";
+import {addTaskAC, changeTaskAC, deleteTaskAC, deleteTodolistAC} from "./redux/Reducer";
 
 class TodoList extends React.Component {
 	constructor(props) {
@@ -16,69 +18,41 @@ class TodoList extends React.Component {
 		tasks: [],
 		filterValue: 'All',
 	}
-	addTask = (newText) => {
+	onAddTask = (newText) => {
 		let newTask = {
-			id: this.newTaskId++,
+			id: this.newTaskId,
 			title: newText,
 			isDone: true,
 			priority: 'low'
 		};
-		let newTasks = [...this.state.tasks, newTask];
-		this.setState({tasks: newTasks}, () => {
-			this.saveState()
-		});
+		this.newTaskId++;
+		this.props.addTask(this.props.id, newTask)
 	}
 
 	changedFilter = (newFilterValue) => {
-		this.setState({filterValue: newFilterValue}, () => {
-			this.saveState()
-		});
+		this.setState({filterValue: newFilterValue});
 	}
 
-	changeTask = (taskId, obj) => {
-		let newTasks = this.state.tasks.map(t => {
+	onChangeTask = (taskId, obj) => {
+		/*let newTasks = this.state.tasks.map(t => {
 			if (t.id !== taskId) {
 				return t;
 			} else return {...t, ...obj}
-		})
-		this.setState({tasks: newTasks}, () => {
-			this.saveState()
-		})
+		})*/
+		this.props.changeTask(this.props.id, taskId, obj)
 	}
-
 	changeStatus = (taskId, isDone) => {
-		this.changeTask(taskId, {isDone: isDone})
+		this.onChangeTask(taskId, {isDone: isDone})
 	}
-
 	changeTitle = (taskId, NewTitle) => {
-		this.changeTask(taskId, {title: NewTitle})
+		this.onChangeTask(taskId, {title: NewTitle})
+	}
+	onDeleteTodolist = () => {
+		this.props.deleteTodolist(this.props.id);
 	}
 
-	saveState = () => {
-		let stateAsString = JSON.stringify(this.state);
-		localStorage.setItem('our-state'+ this.props.id, stateAsString);
-	}
-
-	restoreState = () => {
-		let state = {
-			tasks: [],
-			filterValue: 'All',
-		}
-		let stateAsString = localStorage.getItem('our-state'+ this.props.id);
-		if (stateAsString != null) {
-			state = JSON.parse(stateAsString);
-		}
-		state.tasks.map(t => {
-			if (t.id >= this.newTaskId) {
-				this.newTaskId = t.id + 1;
-			}
-		})
-		this.setState(state);
-
-	}
-
-	componentDidMount() {
-		this.restoreState();
+	onDeleteTask = (taskId) => {
+		this.props.deleteTask(this.props.id, taskId);
 	}
 
 	render = () => {
@@ -87,13 +61,15 @@ class TodoList extends React.Component {
 			<div className="App">
 				<div className="todoList">
 					<div>
-					<TodoListTitle title={this.props.title}/>
-					<AddNewItemForm addItem={this.addTask}/>
+						<TodoListTitle title={this.props.title}/>
+						<AddNewItemForm addItem={this.onAddTask}/>
+						<button onClick={this.onDeleteTodolist}>x</button>
 					</div>
 					<TodoListTasks
 						changeStatus={this.changeStatus}
 						changeTitle={this.changeTitle}
-						tasks={this.state.tasks.filter(t => {
+						onDeleteTask={this.onDeleteTask}
+						tasks={this.props.tasks.filter(t => {
 							if (this.state.filterValue === "All") {
 								return true;
 							}
@@ -112,5 +88,25 @@ class TodoList extends React.Component {
 	}
 }
 
-export default TodoList;
+const mapStateToProps = (state) => {
+	return {todolists: state.todolists}
+}
+const mapDispatchToProps = (dispatch) => {
+	return {
+		deleteTodolist: (todolistId) => {
+			dispatch(deleteTodolistAC(todolistId))
+		},
+		addTask: (todolistId, newTask) => {
+			dispatch(addTaskAC(todolistId, newTask))
+		},
+		deleteTask: (todolistId, taskId)=>{
+			dispatch(deleteTaskAC(todolistId, taskId))
+		},
+		changeTask: (todolistId,taskId, obj)=>{
+			dispatch(changeTaskAC(todolistId,taskId, obj))
+		}
+	}
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(TodoList);
 

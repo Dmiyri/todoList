@@ -4,8 +4,12 @@ display: flex;
 }
 
 .todoList {
-  width: 500px;
-  margin: 0 auto;
+  width: 300px;
+  background-color: aquamarine;
+  padding: 20px;
+  margin: 20px;
+  border-style: dot-dash;
+  border-color: black;
 }
 
 .todoList > div {
